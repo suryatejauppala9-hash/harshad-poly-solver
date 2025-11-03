@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Info, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { 
   modifiedLegendrePolynomial, 
@@ -18,25 +18,19 @@ export const PolynomialCalculator = () => {
   const [order, setOrder] = useState("");
   const [results, setResults] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["a", "e"]));
-
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(section)) {
-        newSet.delete(section);
-      } else {
-        newSet.add(section);
-      }
-      return newSet;
-    });
-  };
+  const [showFullMatrices, setShowFullMatrices] = useState(false);
 
   const handleCalculation = async () => {
     const n = parseInt(order);
-    if (isNaN(n) || n < 1 || n > 100) {
-      toast.error("Please enter a number between 1 and 100");
+    if (isNaN(n) || n < 1) {
+      toast.error("Please enter a valid positive number");
       return;
+    }
+
+    if (n > 500) {
+      toast("Large computation", {
+        description: "This may take a while for n > 500",
+      });
     }
 
     setLoading(true);
@@ -74,58 +68,107 @@ export const PolynomialCalculator = () => {
       toast.success("All calculations completed!");
     } catch (error) {
       console.error(error);
-      toast.error("Calculation failed. Try a smaller order.");
+      toast.error("Calculation failed. Try a smaller order if the error persists.");
     } finally {
       setLoading(false);
     }
   };
 
-  const formatArray = (arr: number[], precision = 4) => {
-    if (arr.length <= 10) {
-      return arr.map(x => x.toFixed(precision)).join(", ");
-    }
-    return `[${arr[0].toFixed(precision)}, ${arr[1].toFixed(precision)}, ..., ${arr[arr.length-1].toFixed(precision)}]`;
+  const formatMatrix = (matrix: number[][], precision = 4): string => {
+    return matrix.map(row => 
+      "[" + row.map(x => x.toFixed(precision).padStart(10)).join(" ") + "]"
+    ).join("\n");
   };
 
-  const formatMatrix = (matrix: number[][], precision = 4) => {
-    if (matrix.length <= 5) {
-      return matrix.map(row => 
-        "[" + row.map(x => x.toFixed(precision).padStart(8)).join(" ") + "]"
-      ).join("\n");
-    }
-    return `${matrix.length}×${matrix[0].length} matrix (too large to display)`;
+  const formatArray = (arr: number[], precision = 6) => {
+    return arr.map(x => x.toFixed(precision)).join(", ");
   };
 
   return (
     <div className="space-y-6">
-      {/* Input Card */}
-      <Card className="shadow-lg">
+      {/* Theory Section */}
+      <Card className="glass-effect border-primary/30 shadow-glow">
         <CardHeader>
-          <CardTitle className="text-2xl text-primary">Legendre Polynomial Analysis</CardTitle>
-          <CardDescription>
-            Comprehensive analysis of modified Legendre polynomials
+          <div className="flex items-center gap-2 mb-2">
+            <Info className="w-5 h-5 text-primary" />
+            <CardTitle className="text-2xl">Legendre Polynomial Theory</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm leading-relaxed">
+          <div>
+            <h4 className="font-semibold text-primary mb-2">Definition & Properties</h4>
+            <p className="text-muted-foreground mb-3">
+              <span className="text-foreground font-semibold">Legendre polynomials</span> are solutions to Legendre's 
+              differential equation and form an orthogonal polynomial sequence. They are crucial in physics, particularly 
+              in solving problems with spherical symmetry.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+              <h4 className="font-semibold text-primary mb-2">Recurrence Relation</h4>
+              <div className="font-mono text-xs space-y-1 text-muted-foreground">
+                <p>P₀(x) = 1</p>
+                <p>P₁(x) = x</p>
+                <p className="text-foreground">(n+1)Pₙ₊₁(x) = (2n+1)xPₙ(x) - nPₙ₋₁(x)</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-lg bg-accent/5 border border-accent/20">
+              <h4 className="font-semibold text-accent mb-2">Applications</h4>
+              <ul className="space-y-1 text-muted-foreground text-xs">
+                <li>• Quantum mechanics (angular momentum)</li>
+                <li>• Electromagnetic field theory</li>
+                <li>• Approximation theory</li>
+                <li>• Numerical integration (Gauss-Legendre)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-lg bg-secondary/5 border border-secondary/20">
+            <h4 className="font-semibold text-secondary mb-2">Companion Matrix Method</h4>
+            <p className="text-muted-foreground text-xs">
+              The companion matrix is a special matrix whose eigenvalues are the roots of a polynomial. 
+              For a monic polynomial p(x) = xⁿ + aₙ₋₁xⁿ⁻¹ + ... + a₁x + a₀, the companion matrix has 
+              1's on the superdiagonal and -aᵢ in the last row, making eigenvalue computation equivalent 
+              to root finding.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Input Card */}
+      <Card className="glass-effect border-accent/20 shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-2xl text-accent">Comprehensive Polynomial Analysis</CardTitle>
+          <CardDescription className="text-xs">
+            Complete analysis including polynomial generation, matrix operations, LU decomposition, 
+            root finding, and Newton-Raphson refinement
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="order">Polynomial Order (1-100)</Label>
+            <Label htmlFor="order" className="text-sm">Polynomial Order (any positive integer)</Label>
             <Input
               id="order"
               type="number"
-              placeholder="e.g., 10"
+              placeholder="e.g., 10, 50, 100, or even 1000"
               value={order}
               onChange={(e) => setOrder(e.target.value)}
               min="1"
-              max="100"
+              className="glass-effect border-accent/30 font-mono"
             />
+            <p className="text-xs text-muted-foreground">
+              Note: Orders above 100 may take longer to compute. Orders above 500 may take significantly longer.
+            </p>
           </div>
           <Button
             onClick={handleCalculation}
             disabled={loading}
-            className="w-full bg-gradient-to-r from-primary via-accent to-secondary"
+            className="w-full bg-gradient-to-r from-primary via-accent to-secondary hover:opacity-90 font-semibold"
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Calculate All Problems (A-E)
+            {loading ? "Computing..." : "Calculate All Problems (A-E)"}
           </Button>
         </CardContent>
       </Card>
@@ -134,131 +177,185 @@ export const PolynomialCalculator = () => {
       {results && (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom">
           {/* Problem A */}
-          <Card className="shadow-lg">
-            <CardHeader 
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => toggleSection("a")}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg text-primary">A. Modified Legendre Polynomial</CardTitle>
-                  <CardDescription>Order {results.order}</CardDescription>
-                </div>
-                {expandedSections.has("a") ? <ChevronUp /> : <ChevronDown />}
-              </div>
+          <Card className="glass-effect border-primary/20">
+            <CardHeader>
+              <CardTitle className="text-lg text-primary">A. Modified Legendre Polynomial P_{results.order}(x)</CardTitle>
+              <CardDescription className="text-xs">
+                Polynomial coefficients from highest to lowest degree
+              </CardDescription>
             </CardHeader>
-            {expandedSections.has("a") && (
-              <CardContent>
-                <div className="p-4 bg-muted rounded-lg font-mono text-sm">
-                  P(x) = {formatArray(results.polynomial, 6)}
+            <CardContent>
+              <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-x-auto border border-primary/20">
+                <div className="whitespace-pre-wrap break-all">
+                  {results.polynomial.map((coef: number, idx: number) => {
+                    const power = results.order - idx;
+                    return (
+                      <span key={idx} className="inline-block mr-4 mb-2">
+                        {coef >= 0 && idx > 0 ? "+ " : ""}
+                        <span className="text-primary font-semibold">{coef.toFixed(6)}</span>
+                        {power > 0 && <span className="text-muted-foreground">x^{power}</span>}
+                      </span>
+                    );
+                  })}
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Coefficients from highest to lowest degree
-                </p>
-              </CardContent>
-            )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Total coefficients: {results.polynomial.length}
+              </p>
+            </CardContent>
           </Card>
 
           {/* Problem B */}
-          <Card className="shadow-lg">
-            <CardHeader 
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => toggleSection("b")}
-            >
+          <Card className="glass-effect border-accent/20">
+            <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg text-primary">B. Companion Matrix</CardTitle>
-                  <CardDescription>{results.order}×{results.order} matrix</CardDescription>
+                  <CardTitle className="text-lg text-accent">B. Companion Matrix</CardTitle>
+                  <CardDescription className="text-xs">
+                    {results.order}×{results.order} matrix with eigenvalues equal to polynomial roots
+                  </CardDescription>
                 </div>
-                {expandedSections.has("b") ? <ChevronUp /> : <ChevronDown />}
+                {results.order > 10 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowFullMatrices(!showFullMatrices)}
+                    className="text-xs"
+                  >
+                    {showFullMatrices ? (
+                      <>
+                        <EyeOff className="w-4 h-4 mr-1" /> Hide Full Matrix
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="w-4 h-4 mr-1" /> Show Full Matrix
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
             </CardHeader>
-            {expandedSections.has("b") && (
-              <CardContent>
-                <div className="p-4 bg-muted rounded-lg font-mono text-xs overflow-x-auto whitespace-pre">
-                  {formatMatrix(results.companion)}
-                </div>
-              </CardContent>
-            )}
+            <CardContent>
+              <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-auto max-h-96 border border-accent/20">
+                <pre className="whitespace-pre">
+                  {showFullMatrices || results.order <= 10
+                    ? formatMatrix(results.companion)
+                    : `Matrix size: ${results.order}×${results.order}\n\nFirst 5x5 block:\n${formatMatrix(results.companion.slice(0, 5).map((row: number[]) => row.slice(0, 5)))}\n\n...\n\n(Use "Show Full Matrix" button to view entire matrix)`
+                  }
+                </pre>
+              </div>
+            </CardContent>
           </Card>
 
           {/* Problem C */}
-          <Card className="shadow-lg">
-            <CardHeader 
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => toggleSection("c")}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg text-primary">C. Roots via LU Decomposition</CardTitle>
-                  <CardDescription>Eigenvalues of companion matrix</CardDescription>
-                </div>
-                {expandedSections.has("c") ? <ChevronUp /> : <ChevronDown />}
-              </div>
+          <Card className="glass-effect border-secondary/20">
+            <CardHeader>
+              <CardTitle className="text-lg text-secondary">C. Roots via LU Decomposition</CardTitle>
+              <CardDescription className="text-xs">
+                Eigenvalues of the companion matrix (polynomial roots)
+              </CardDescription>
             </CardHeader>
-            {expandedSections.has("c") && (
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="font-semibold mb-2">Roots (Eigenvalues):</p>
-                  <div className="p-4 bg-muted rounded-lg font-mono text-sm">
-                    {formatArray(results.eigenvalues, 6)}
-                  </div>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="font-semibold mb-2 text-sm text-secondary">All Roots ({results.eigenvalues.length}):</p>
+                <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-x-auto border border-secondary/20">
+                  {results.eigenvalues.length <= 20 ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {results.eigenvalues.map((val: number, idx: number) => (
+                        <div key={idx} className="p-2 rounded bg-secondary/10 text-center">
+                          {val.toFixed(6)}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="whitespace-pre-wrap break-all">
+                      {formatArray(results.eigenvalues)}
+                    </div>
+                  )}
                 </div>
-              </CardContent>
-            )}
+              </div>
+
+              {showFullMatrices && (
+                <>
+                  <div>
+                    <p className="font-semibold mb-2 text-sm">L Matrix (Lower Triangular):</p>
+                    <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-auto max-h-64 border border-border/20">
+                      <pre>{formatMatrix(results.L)}</pre>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="font-semibold mb-2 text-sm">U Matrix (Upper Triangular):</p>
+                    <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-auto max-h-64 border border-border/20">
+                      <pre>{formatMatrix(results.U)}</pre>
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
           </Card>
 
           {/* Problem D */}
-          <Card className="shadow-lg">
-            <CardHeader 
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => toggleSection("d")}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg text-primary">D. Solution of Ax=b</CardTitle>
-                  <CardDescription>Where b = [1, 2, 3, ..., n]</CardDescription>
-                </div>
-                {expandedSections.has("d") ? <ChevronUp /> : <ChevronDown />}
-              </div>
+          <Card className="glass-effect border-primary/20">
+            <CardHeader>
+              <CardTitle className="text-lg text-primary">D. Solution of Ax = b</CardTitle>
+              <CardDescription className="text-xs">
+                Where A is the companion matrix and b = [1, 2, 3, ..., n]
+              </CardDescription>
             </CardHeader>
-            {expandedSections.has("d") && (
-              <CardContent>
-                <div className="p-4 bg-muted rounded-lg font-mono text-sm">
-                  x = {formatArray(results.x, 6)}
-                </div>
-              </CardContent>
-            )}
+            <CardContent>
+              <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-x-auto border border-primary/20">
+                {results.x.length <= 20 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                    {results.x.map((val: number, idx: number) => (
+                      <div key={idx} className="p-2 rounded bg-primary/10">
+                        <span className="text-muted-foreground">x[{idx}] = </span>
+                        <span className="text-primary font-semibold">{val.toFixed(6)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="whitespace-pre-wrap break-all">
+                    x = [{formatArray(results.x)}]
+                  </div>
+                )}
+              </div>
+            </CardContent>
           </Card>
 
           {/* Problem E */}
-          <Card className="shadow-lg border-primary/30">
-            <CardHeader 
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => toggleSection("e")}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg text-primary">E. Extreme Roots (Newton-Raphson)</CardTitle>
-                  <CardDescription>Smallest and largest roots refined</CardDescription>
-                </div>
-                {expandedSections.has("e") ? <ChevronUp /> : <ChevronDown />}
-              </div>
+          <Card className="glass-effect border-accent/20 shadow-glow-accent">
+            <CardHeader>
+              <CardTitle className="text-lg text-accent">E. Extreme Roots (Newton-Raphson Method)</CardTitle>
+              <CardDescription className="text-xs">
+                Refined calculation of smallest and largest roots using iterative root-finding
+              </CardDescription>
             </CardHeader>
-            {expandedSections.has("e") && (
-              <CardContent>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-accent/10 rounded-lg">
-                    <p className="font-semibold text-accent mb-2">Smallest Root:</p>
-                    <p className="font-mono text-lg">{results.smallest.toFixed(8)}</p>
-                  </div>
-                  <div className="p-4 bg-primary/10 rounded-lg">
-                    <p className="font-semibold text-primary mb-2">Largest Root:</p>
-                    <p className="font-mono text-lg">{results.largest.toFixed(8)}</p>
-                  </div>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="p-6 rounded-xl glass-effect border-2 border-secondary/30">
+                  <p className="text-xs text-muted-foreground mb-2">Smallest Root</p>
+                  <p className="font-mono text-3xl font-bold text-secondary">
+                    {results.smallest.toFixed(10)}
+                  </p>
                 </div>
-              </CardContent>
-            )}
+                <div className="p-6 rounded-xl glass-effect border-2 border-primary/30">
+                  <p className="text-xs text-muted-foreground mb-2">Largest Root</p>
+                  <p className="font-mono text-3xl font-bold text-primary">
+                    {results.largest.toFixed(10)}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mt-4 p-4 rounded-lg bg-muted/20 border border-border/50 text-xs text-muted-foreground">
+                <p className="font-semibold text-foreground mb-1">Newton-Raphson Formula:</p>
+                <p className="font-mono">xₙ₊₁ = xₙ - f(xₙ)/f'(xₙ)</p>
+                <p className="mt-2">
+                  Starting from eigenvalue estimates, this iterative method refines the roots to high precision 
+                  by using the polynomial and its derivative.
+                </p>
+              </div>
+            </CardContent>
           </Card>
         </div>
       )}
