@@ -40,6 +40,12 @@ export const HarshadCalculator = () => {
       return;
     }
 
+    if (n >= 15) {
+      toast("This may take a while", {
+        description: "Searching for long consecutive runs is computationally intensive.",
+      });
+    }
+
     setLoading(true);
     try {
       const result = await findConsecutiveHarshads(n);

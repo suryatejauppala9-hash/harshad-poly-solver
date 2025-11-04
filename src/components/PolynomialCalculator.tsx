@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, Info, Eye, EyeOff } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { 
   modifiedLegendrePolynomial, 
@@ -18,7 +19,7 @@ export const PolynomialCalculator = () => {
   const [order, setOrder] = useState("");
   const [results, setResults] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [showFullMatrices, setShowFullMatrices] = useState(false);
+  const [showFullMatrices, setShowFullMatrices] = useState(true);
 
   const handleCalculation = async () => {
     const n = parseInt(order);
@@ -114,15 +115,6 @@ export const PolynomialCalculator = () => {
               </div>
             </div>
 
-            <div className="p-4 rounded-lg bg-accent/5 border border-accent/20">
-              <h4 className="font-semibold text-accent mb-2">Applications</h4>
-              <ul className="space-y-1 text-muted-foreground text-xs">
-                <li>• Quantum mechanics (angular momentum)</li>
-                <li>• Electromagnetic field theory</li>
-                <li>• Approximation theory</li>
-                <li>• Numerical integration (Gauss-Legendre)</li>
-              </ul>
-            </div>
           </div>
 
           <div className="p-4 rounded-lg bg-secondary/5 border border-secondary/20">

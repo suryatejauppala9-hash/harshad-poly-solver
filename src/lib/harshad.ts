@@ -32,32 +32,37 @@ export async function findNthNonHarshadFactorial(n: number): Promise<{
   isHarshad: boolean;
 }> {
   let count = 0;
-  let factorialNumber = 1;
-  
+  let i = 1;
+  let fact = BigInt(1);
+  const yieldEvery = 25;
+
   while (count < n) {
-    const fact = factorial(factorialNumber);
+    fact *= BigInt(i);
     const digitSum = digitSumBigInt(fact);
-    const harshad = fact % BigInt(digitSum) === BigInt(0);
-    
+    const harshad = digitSum !== 0 && fact % BigInt(digitSum) === BigInt(0);
+
     if (!harshad) {
       count++;
       if (count === n) {
         return {
-          factorialNumber,
+          factorialNumber: i,
           value: fact.toString(),
           digitSum,
-          isHarshad: harshad
+          isHarshad: harshad,
         };
       }
     }
-    factorialNumber++;
-    
-    // Safety limit
-    if (factorialNumber > 1000) {
+
+    i++;
+    if (i % yieldEvery === 0) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    }
+
+    if (i > 100000 && count < n) {
       throw new Error("Search limit reached");
     }
   }
-  
+
   throw new Error("Not found");
 }
 
@@ -65,35 +70,49 @@ export async function findConsecutiveHarshads(n: number): Promise<number[]> {
   const result: number[] = [];
   let current = 1;
   let consecutiveCount = 0;
-  
-  // Start searching from a reasonable number
-  // Known: 110, 111, 112 are consecutive
-  if (n === 3) {
-    return [110, 111, 112];
-  }
-  
-  // For n=10, known sequence starts at 510
-  const searchStart = n <= 3 ? 1 : (n <= 10 ? 500 : 10000);
-  current = searchStart;
-  
+
+  // Efficient digit sum tracking
+  const countTrailing9s = (x: number) => {
+    let c = 0;
+    while (x % 10 === 9) {
+      c++;
+      x = Math.floor(x / 10);
+    }
+    return c;
+  };
+
+  let digitSum = 1; // sum of digits of current (1)
+  const batchSize = 100000;
+
   while (consecutiveCount < n) {
-    if (isHarshad(current)) {
+    if (current % digitSum === 0) {
       result.push(current);
       consecutiveCount++;
     } else {
       result.length = 0;
       consecutiveCount = 0;
     }
+
+    // advance to next number and update digit sum quickly
+    const t9 = countTrailing9s(current);
+    if (t9 > 0) {
+      digitSum = digitSum - 9 * t9 + 1;
+    } else {
+      digitSum = digitSum + 1;
+    }
+
     current++;
-    
-    // Safety limit
-    if (current > 1000000) {
-      if (result.length > 0) {
-        return result;
-      }
+
+    if (current % batchSize === 0) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    }
+
+    // Very high safety limit to allow long searches
+    if (current > 100000000) {
+      if (result.length > 0) return result;
       throw new Error("Search limit reached");
     }
   }
-  
+
   return result;
 }
