@@ -167,189 +167,202 @@ export const PolynomialCalculator = () => {
 
       {/* Results */}
       {results && (
-        <div className="space-y-4 animate-in fade-in slide-in-from-bottom">
-          {/* Problem A */}
-          <Card className="glass-effect border-primary/20">
-            <CardHeader>
-              <CardTitle className="text-lg text-primary">A. Modified Legendre Polynomial P_{results.order}(x)</CardTitle>
-              <CardDescription className="text-xs">
-                Polynomial coefficients from highest to lowest degree
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-x-auto border border-primary/20">
-                <div className="whitespace-pre-wrap break-all">
-                  {results.polynomial.map((coef: number, idx: number) => {
-                    const power = results.order - idx;
-                    return (
-                      <span key={idx} className="inline-block mr-4 mb-2">
-                        {coef >= 0 && idx > 0 ? "+ " : ""}
-                        <span className="text-primary font-semibold">{coef.toFixed(6)}</span>
-                        {power > 0 && <span className="text-muted-foreground">x^{power}</span>}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Total coefficients: {results.polynomial.length}
-              </p>
-            </CardContent>
-          </Card>
+        <Tabs defaultValue="A" className="w-full animate-in fade-in slide-in-from-bottom">
+          <TabsList className="w-full justify-start gap-2 overflow-x-auto sticky top-0 z-20 glass-effect border border-border/40 backdrop-blur-xl bg-background/95 py-6 mb-4">
+            <TabsTrigger value="A" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary">2A. Polynomial</TabsTrigger>
+            <TabsTrigger value="B" className="data-[state=active]:bg-accent/20 data-[state=active]:text-accent">2B. Companion Matrix</TabsTrigger>
+            <TabsTrigger value="C" className="data-[state=active]:bg-secondary/20 data-[state=active]:text-secondary">2C. Roots via LU</TabsTrigger>
+            <TabsTrigger value="D" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary">2D. Solve Ax=b</TabsTrigger>
+            <TabsTrigger value="E" className="data-[state=active]:bg-accent/20 data-[state=active]:text-accent">2E. Extreme Roots</TabsTrigger>
+          </TabsList>
 
-          {/* Problem B */}
-          <Card className="glass-effect border-accent/20">
-            <CardHeader>
-              <div className="flex items-center justify-between">
+          <TabsContent value="A" className="space-y-4">
+            <Card className="glass-effect border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-lg text-primary">A. Modified Legendre Polynomial P_{results.order}(x)</CardTitle>
+                <CardDescription className="text-xs">
+                  Polynomial coefficients from highest to lowest degree
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-x-auto border border-primary/20">
+                  <div className="whitespace-pre-wrap break-all">
+                    {results.polynomial.map((coef: number, idx: number) => {
+                      const power = results.order - idx;
+                      return (
+                        <span key={idx} className="inline-block mr-4 mb-2">
+                          {coef >= 0 && idx > 0 ? "+ " : ""}
+                          <span className="text-primary font-semibold">{coef.toFixed(6)}</span>
+                          {power > 0 && <span className="text-muted-foreground">x^{power}</span>}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Total coefficients: {results.polynomial.length}
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="B" className="space-y-4">
+            <Card className="glass-effect border-accent/20">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg text-accent">B. Companion Matrix</CardTitle>
+                    <CardDescription className="text-xs">
+                      {results.order}×{results.order} matrix with eigenvalues equal to polynomial roots
+                    </CardDescription>
+                  </div>
+                  {results.order > 10 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowFullMatrices(!showFullMatrices)}
+                      className="text-xs"
+                    >
+                      {showFullMatrices ? (
+                        <>
+                          <EyeOff className="w-4 h-4 mr-1" /> Hide Full Matrix
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-4 h-4 mr-1" /> Show Full Matrix
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-auto max-h-[60vh] border border-accent/20">
+                  <pre className="whitespace-pre">
+                    {showFullMatrices || results.order <= 10
+                      ? formatMatrix(results.companion)
+                      : `Matrix size: ${results.order}×${results.order}\n\nFirst 5x5 block:\n${formatMatrix(results.companion.slice(0, 5).map((row: number[]) => row.slice(0, 5)))}\n\n...\n\n(Use "Show Full Matrix" button to view entire matrix)`
+                    }
+                  </pre>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="C" className="space-y-4">
+            <Card className="glass-effect border-secondary/20">
+              <CardHeader>
+                <CardTitle className="text-lg text-secondary">C. Roots via LU Decomposition</CardTitle>
+                <CardDescription className="text-xs">
+                  Eigenvalues of the companion matrix (polynomial roots)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div>
-                  <CardTitle className="text-lg text-accent">B. Companion Matrix</CardTitle>
-                  <CardDescription className="text-xs">
-                    {results.order}×{results.order} matrix with eigenvalues equal to polynomial roots
-                  </CardDescription>
-                </div>
-                {results.order > 10 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowFullMatrices(!showFullMatrices)}
-                    className="text-xs"
-                  >
-                    {showFullMatrices ? (
-                      <>
-                        <EyeOff className="w-4 h-4 mr-1" /> Hide Full Matrix
-                      </>
+                  <p className="font-semibold mb-2 text-sm text-secondary">All Roots ({results.eigenvalues.length}):</p>
+                  <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-x-auto border border-secondary/20">
+                    {results.eigenvalues.length <= 20 ? (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        {results.eigenvalues.map((val: number, idx: number) => (
+                          <div key={idx} className="p-2 rounded bg-secondary/10 text-center">
+                            {val.toFixed(6)}
+                          </div>
+                        ))}
+                      </div>
                     ) : (
-                      <>
-                        <Eye className="w-4 h-4 mr-1" /> Show Full Matrix
-                      </>
+                      <div className="whitespace-pre-wrap break-all">
+                        {formatArray(results.eigenvalues)}
+                      </div>
                     )}
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-auto max-h-96 border border-accent/20">
-                <pre className="whitespace-pre">
-                  {showFullMatrices || results.order <= 10
-                    ? formatMatrix(results.companion)
-                    : `Matrix size: ${results.order}×${results.order}\n\nFirst 5x5 block:\n${formatMatrix(results.companion.slice(0, 5).map((row: number[]) => row.slice(0, 5)))}\n\n...\n\n(Use "Show Full Matrix" button to view entire matrix)`
-                  }
-                </pre>
-              </div>
-            </CardContent>
-          </Card>
+                  </div>
+                </div>
 
-          {/* Problem C */}
-          <Card className="glass-effect border-secondary/20">
-            <CardHeader>
-              <CardTitle className="text-lg text-secondary">C. Roots via LU Decomposition</CardTitle>
-              <CardDescription className="text-xs">
-                Eigenvalues of the companion matrix (polynomial roots)
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="font-semibold mb-2 text-sm text-secondary">All Roots ({results.eigenvalues.length}):</p>
-                <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-x-auto border border-secondary/20">
-                  {results.eigenvalues.length <= 20 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      {results.eigenvalues.map((val: number, idx: number) => (
-                        <div key={idx} className="p-2 rounded bg-secondary/10 text-center">
-                          {val.toFixed(6)}
+                {showFullMatrices && (
+                  <>
+                    <div>
+                      <p className="font-semibold mb-2 text-sm">L Matrix (Lower Triangular):</p>
+                      <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-auto max-h-64 border border-border/20">
+                        <pre>{formatMatrix(results.L)}</pre>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold mb-2 text-sm">U Matrix (Upper Triangular):</p>
+                      <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-auto max-h-64 border border-border/20">
+                        <pre>{formatMatrix(results.U)}</pre>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="D" className="space-y-4">
+            <Card className="glass-effect border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-lg text-primary">D. Solution of Ax = b</CardTitle>
+                <CardDescription className="text-xs">
+                  Where A is the companion matrix and b = [1, 2, 3, ..., n]
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-x-auto border border-primary/20">
+                  {results.x.length <= 20 ? (
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                      {results.x.map((val: number, idx: number) => (
+                        <div key={idx} className="p-2 rounded bg-primary/10">
+                          <span className="text-muted-foreground">x[{idx}] = </span>
+                          <span className="text-primary font-semibold">{val.toFixed(6)}</span>
                         </div>
                       ))}
                     </div>
                   ) : (
                     <div className="whitespace-pre-wrap break-all">
-                      {formatArray(results.eigenvalues)}
+                      x = [{formatArray(results.x)}]
                     </div>
                   )}
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-              {showFullMatrices && (
-                <>
-                  <div>
-                    <p className="font-semibold mb-2 text-sm">L Matrix (Lower Triangular):</p>
-                    <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-auto max-h-64 border border-border/20">
-                      <pre>{formatMatrix(results.L)}</pre>
-                    </div>
+          <TabsContent value="E" className="space-y-4">
+            <Card className="glass-effect border-accent/20 shadow-glow-accent">
+              <CardHeader>
+                <CardTitle className="text-lg text-accent">E. Extreme Roots (Newton-Raphson Method)</CardTitle>
+                <CardDescription className="text-xs">
+                  Refined calculation of smallest and largest roots using iterative root-finding
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="p-6 rounded-xl glass-effect border-2 border-secondary/30">
+                    <p className="text-xs text-muted-foreground mb-2">Smallest Root</p>
+                    <p className="font-mono text-3xl font-bold text-secondary">
+                      {results.smallest.toFixed(10)}
+                    </p>
                   </div>
-
-                  <div>
-                    <p className="font-semibold mb-2 text-sm">U Matrix (Upper Triangular):</p>
-                    <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-auto max-h-64 border border-border/20">
-                      <pre>{formatMatrix(results.U)}</pre>
-                    </div>
+                  <div className="p-6 rounded-xl glass-effect border-2 border-primary/30">
+                    <p className="text-xs text-muted-foreground mb-2">Largest Root</p>
+                    <p className="font-mono text-3xl font-bold text-primary">
+                      {results.largest.toFixed(10)}
+                    </p>
                   </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Problem D */}
-          <Card className="glass-effect border-primary/20">
-            <CardHeader>
-              <CardTitle className="text-lg text-primary">D. Solution of Ax = b</CardTitle>
-              <CardDescription className="text-xs">
-                Where A is the companion matrix and b = [1, 2, 3, ..., n]
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="p-4 glass-effect rounded-lg font-mono text-xs overflow-x-auto border border-primary/20">
-                {results.x.length <= 20 ? (
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                    {results.x.map((val: number, idx: number) => (
-                      <div key={idx} className="p-2 rounded bg-primary/10">
-                        <span className="text-muted-foreground">x[{idx}] = </span>
-                        <span className="text-primary font-semibold">{val.toFixed(6)}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="whitespace-pre-wrap break-all">
-                    x = [{formatArray(results.x)}]
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Problem E */}
-          <Card className="glass-effect border-accent/20 shadow-glow-accent">
-            <CardHeader>
-              <CardTitle className="text-lg text-accent">E. Extreme Roots (Newton-Raphson Method)</CardTitle>
-              <CardDescription className="text-xs">
-                Refined calculation of smallest and largest roots using iterative root-finding
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="p-6 rounded-xl glass-effect border-2 border-secondary/30">
-                  <p className="text-xs text-muted-foreground mb-2">Smallest Root</p>
-                  <p className="font-mono text-3xl font-bold text-secondary">
-                    {results.smallest.toFixed(10)}
+                </div>
+                
+                <div className="mt-4 p-4 rounded-lg bg-muted/20 border border-border/50 text-xs text-muted-foreground">
+                  <p className="font-semibold text-foreground mb-1">Newton-Raphson Formula:</p>
+                  <p className="font-mono">xₙ₊₁ = xₙ - f(xₙ)/f'(xₙ)</p>
+                  <p className="mt-2">
+                    Starting from eigenvalue estimates, this iterative method refines the roots to high precision 
+                    by using the polynomial and its derivative.
                   </p>
                 </div>
-                <div className="p-6 rounded-xl glass-effect border-2 border-primary/30">
-                  <p className="text-xs text-muted-foreground mb-2">Largest Root</p>
-                  <p className="font-mono text-3xl font-bold text-primary">
-                    {results.largest.toFixed(10)}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="mt-4 p-4 rounded-lg bg-muted/20 border border-border/50 text-xs text-muted-foreground">
-                <p className="font-semibold text-foreground mb-1">Newton-Raphson Formula:</p>
-                <p className="font-mono">xₙ₊₁ = xₙ - f(xₙ)/f'(xₙ)</p>
-                <p className="mt-2">
-                  Starting from eigenvalue estimates, this iterative method refines the roots to high precision 
-                  by using the polynomial and its derivative.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   );
