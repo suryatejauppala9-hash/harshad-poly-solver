@@ -67,43 +67,27 @@ export async function findNthNonHarshadFactorial(n: number): Promise<{
 }
 
 export async function findConsecutiveHarshads(n: number): Promise<number[]> {
-  // Known: 20 consecutive Harshads start at 510 (510-529)
-  // For efficiency, use known starting points
-  const knownStarts: Record<number, number> = {
-    3: 110,   // 110, 111, 112
-    10: 510,  // 510-519
-    20: 510,  // 510-529 (the longest known)
-  };
-
   const result: number[] = [];
-  let current = knownStarts[n] || (n <= 3 ? 1 : n <= 10 ? 500 : 510);
+  let current = 1;
   let consecutiveCount = 0;
 
-  // Compute initial digit sum
-  const getDigitSum = (num: number) => {
+  // Simple, reliable digit sum calculation
+  const getDigitSum = (num: number): number => {
     let sum = 0;
-    while (num > 0) {
-      sum += num % 10;
-      num = Math.floor(num / 10);
+    let temp = num;
+    while (temp > 0) {
+      sum += temp % 10;
+      temp = Math.floor(temp / 10);
     }
     return sum;
   };
 
-  // Count trailing 9s for efficient digit sum updates
-  const countTrailing9s = (x: number) => {
-    let c = 0;
-    while (x % 10 === 9) {
-      c++;
-      x = Math.floor(x / 10);
-    }
-    return c;
-  };
-
-  let digitSum = getDigitSum(current);
-  const batchSize = 50000;
+  const batchSize = 10000;
   let iterations = 0;
 
   while (consecutiveCount < n) {
+    const digitSum = getDigitSum(current);
+    
     if (digitSum !== 0 && current % digitSum === 0) {
       result.push(current);
       consecutiveCount++;
@@ -112,26 +96,18 @@ export async function findConsecutiveHarshads(n: number): Promise<number[]> {
       consecutiveCount = 0;
     }
 
-    // Advance and update digit sum efficiently
-    const t9 = countTrailing9s(current);
-    if (t9 > 0) {
-      digitSum = digitSum - 9 * t9 + 1;
-    } else {
-      digitSum = digitSum + 1;
-    }
-
     current++;
     iterations++;
 
-    // Yield control periodically
+    // Yield control periodically to keep UI responsive
     if (iterations % batchSize === 0) {
       await new Promise<void>((resolve) => setTimeout(resolve, 0));
     }
 
-    // Safety limit
-    if (current > 10000000) {
+    // Safety limit - 20 consecutive harshads are found at 510-529
+    if (current > 100000 && consecutiveCount < n) {
       if (result.length > 0) return result;
-      throw new Error("Search limit reached - sequence may not exist");
+      throw new Error(`Could not find ${n} consecutive Harshad numbers within search limit`);
     }
   }
 
