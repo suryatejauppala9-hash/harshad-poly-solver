@@ -12,30 +12,6 @@ const Index = () => {
       <AnimatedBackground />
       
       <div className="relative z-10 container mx-auto px-4 py-8">
-        {/* Header with Student Info */}
-        <header className="text-center mb-12 animate-in fade-in slide-in-from-top duration-700">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-effect mb-4 border border-primary/20">
-            <GraduationCap className="w-5 h-5 text-primary" />
-            <span className="text-sm font-mono text-muted-foreground">Academic Assignment</span>
-          </div>
-          
-          <h1 className="text-6xl font-bold mb-2 bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent animate-glow">
-            Numerical Methods
-          </h1>
-          <p className="text-2xl font-light text-muted-foreground mb-6">Assignment 2</p>
-          
-          <div className="flex flex-wrap justify-center gap-8 mt-8 text-sm">
-            <div className="glass-effect px-6 py-3 rounded-lg border border-primary/20">
-              <p className="font-semibold text-primary">Surya Teja Uppala</p>
-              <p className="text-muted-foreground font-mono">ES24BTECH11038</p>
-            </div>
-            <div className="glass-effect px-6 py-3 rounded-lg border border-accent/20">
-              <p className="font-semibold text-accent">Angara Sai Shanmukhi</p>
-              <p className="text-muted-foreground font-mono">ES24BTECH11008</p>
-            </div>
-          </div>
-        </header>
-
         {/* Tab Navigation */}
         <div className="flex justify-center gap-4 mb-8">
           <button

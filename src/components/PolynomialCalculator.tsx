@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Info, Eye, EyeOff } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { PolynomialGraph } from "./PolynomialGraph";
 import { 
   modifiedLegendrePolynomial, 
   companionMatrix, 
@@ -87,6 +88,9 @@ export const PolynomialCalculator = () => {
 
   return (
     <div className="space-y-6">
+      {/* Polynomial Table and Graph */}
+      <PolynomialGraph maxN={10} />
+      
       {/* Theory Section */}
       <Card className="glass-effect border-primary/30 shadow-glow">
         <CardHeader>

@@ -160,7 +160,7 @@ export function eigenvaluesFromLU(A: number[][]): number[] {
   return eigenvalues.sort((a, b) => a - b);
 }
 
-function evaluatePolynomial(coeffs: number[], x: number): number {
+export function evaluatePolynomial(coeffs: number[], x: number): number {
   // Use Horner's method for numerical stability
   let result = coeffs[0];
   for (let i = 1; i < coeffs.length; i++) {
