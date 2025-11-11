@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { modifiedLegendrePolynomial, evaluatePolynomial } from "@/lib/polynomial";
+import { legendrePolynomial, evaluatePolynomial } from "@/lib/polynomial";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface PolynomialGraphProps {
@@ -27,7 +27,7 @@ export const PolynomialGraph = ({ maxN = 5 }: PolynomialGraphProps) => {
   const polynomials: Array<{ n: number; coeffs: number[]; expression: string }> = [];
   
   for (let n = 0; n <= maxN; n++) {
-    const coeffs = modifiedLegendrePolynomial(n);
+    const coeffs = legendrePolynomial(n);
     const expression = formatPolynomialExpression(coeffs, n);
     polynomials.push({ n, coeffs, expression });
   }
@@ -48,7 +48,7 @@ export const PolynomialGraph = ({ maxN = 5 }: PolynomialGraphProps) => {
       {/* Polynomial Table */}
       <Card className="glass-effect border-primary/20">
         <CardHeader>
-          <CardTitle className="text-lg text-primary">Modified Legendre Polynomials</CardTitle>
+          <CardTitle className="text-lg text-primary">Legendre Polynomials</CardTitle>
           <CardDescription className="text-xs">
             Mathematical expressions for P_n(x) from n = 0 to {maxN}
           </CardDescription>

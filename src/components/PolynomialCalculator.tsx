@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { PolynomialGraph } from "./PolynomialGraph";
 import { 
-  modifiedLegendrePolynomial, 
+  legendrePolynomial, 
   companionMatrix, 
   luDecomposition,
   solveWithLU,
@@ -37,8 +37,8 @@ export const PolynomialCalculator = () => {
 
     setLoading(true);
     try {
-      // A: Modified Legendre Polynomial
-      const polynomial = modifiedLegendrePolynomial(n);
+      // A: Legendre Polynomial
+      const polynomial = legendrePolynomial(n);
       
       // B: Companion Matrix
       const companion = companionMatrix(polynomial);
@@ -183,7 +183,7 @@ export const PolynomialCalculator = () => {
           <TabsContent value="A" className="space-y-4">
             <Card className="glass-effect border-primary/20">
               <CardHeader>
-                <CardTitle className="text-lg text-primary">A. Modified Legendre Polynomial P_{results.order}(x)</CardTitle>
+                <CardTitle className="text-lg text-primary">A. Legendre Polynomial P_{results.order}(x)</CardTitle>
                 <CardDescription className="text-xs">
                   Polynomial coefficients from highest to lowest degree
                 </CardDescription>

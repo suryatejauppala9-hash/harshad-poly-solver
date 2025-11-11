@@ -32,6 +32,9 @@ export function modifiedLegendrePolynomial(n: number): number[] {
   return P_prev1;
 }
 
+// Standard Legendre polynomial alias (used by UI)
+export const legendrePolynomial = modifiedLegendrePolynomial;
+
 export function companionMatrix(polynomial: number[]): number[][] {
   // Companion matrix for polynomial with coefficients [a_n, a_{n-1}, ..., a_1, a_0]
   // Handles any size polynomial

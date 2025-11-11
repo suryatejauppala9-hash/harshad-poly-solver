@@ -68,79 +68,36 @@ export async function findNthNonHarshadFactorial(n: number): Promise<{
 
 export async function findConsecutiveHarshads(n: number): Promise<number[]> {
   const result: number[] = [];
+  let consecutive = 0;
   let current = 1;
-  let consecutiveCount = 0;
 
-  // Optimized digit sum calculation with incremental updates
-  let digitSum = 1; // digit sum of 1
-  
-  const batchSize = 5000;
+  const batchSize = 10000;
   let iterations = 0;
+  const maxSearch = 10000000; // safety cap; correctness over speed
 
-  while (consecutiveCount < n) {
-    // Check if current is Harshad
-    if (digitSum !== 0 && current % digitSum === 0) {
+  const sumDigits = (x: number): number => x.toString().split("").reduce((s, d) => s + Number(d), 0);
+
+  while (current <= maxSearch) {
+    const ds = sumDigits(current);
+    if (ds !== 0 && current % ds === 0) {
       result.push(current);
-      consecutiveCount++;
+      consecutive++;
+      if (consecutive === n) return result;
     } else {
-      // Reset sequence
+      // reset window
       result.length = 0;
-      consecutiveCount = 0;
+      consecutive = 0;
     }
 
-    // Move to next number and update digit sum efficiently
     current++;
-    
-    // Efficient digit sum update when incrementing
-    let temp = current - 1;
-    let carry = 1;
-    let sumChange = 0;
-    
-    while (carry > 0 && temp > 0) {
-      const digit = temp % 10;
-      if (digit === 9) {
-        sumChange -= 9; // 9 becomes 0
-        temp = Math.floor(temp / 10);
-      } else {
-        sumChange += 1; // digit increases by 1
-        carry = 0;
-      }
-    }
-    
-    if (carry > 0) {
-      // We had all 9s, so we added a new digit
-      digitSum = 1;
-      temp = current;
-      while (temp > 0) {
-        digitSum += temp % 10;
-        temp = Math.floor(temp / 10);
-      }
-      digitSum -= current % 10; // Already counted in loop
-      digitSum += current % 10;
-      // Recalculate fully
-      digitSum = 0;
-      temp = current;
-      while (temp > 0) {
-        digitSum += temp % 10;
-        temp = Math.floor(temp / 10);
-      }
-    } else {
-      digitSum += sumChange;
-    }
-    
     iterations++;
 
-    // Yield control periodically to keep UI responsive
     if (iterations % batchSize === 0) {
+      // keep UI responsive
       await new Promise<void>((resolve) => setTimeout(resolve, 0));
-    }
-
-    // Safety limit - 20 consecutive harshads exist at 510-529
-    if (current > 1000000 && consecutiveCount < n) {
-      if (result.length > 0) return result;
-      throw new Error(`Could not find ${n} consecutive Harshad numbers within search limit`);
     }
   }
 
-  return result;
+  if (result.length > 0) return result;
+  throw new Error(`Could not find ${n} consecutive Harshad numbers within search limit`);
 }
